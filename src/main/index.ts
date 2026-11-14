@@ -3,10 +3,13 @@ import { defineMainPlugin, type MainPluginContext } from '@dsz-examaware/plugin-
 import { examFilePath, loadConnection, type ConnectionDocument } from '../shared/connection.mjs'
 
 interface RemoteCiSettings {
+  status?: 'bound' | 'waiting' | 'error'
   agentToken?: string
   serverUrl?: string
   className?: string
+  classId?: string
   lastError?: string
+  checkedAt?: string
   startedJobIds?: string[]
 }
 
@@ -32,7 +35,11 @@ export default defineMainPlugin<RemoteCiSettings>({
           readText: (file) => ctx.api.files.readText(file)
         })
         if (!connection) {
-          await remember(ctx, { lastError: '还没有读到 ClassIsland 上的 RemoteCI 连接信息' })
+          await remember(ctx, {
+            status: 'waiting',
+            lastError: '还没有读到 ClassIsland 上的 RemoteCI 连接信息',
+            checkedAt: new Date().toISOString()
+          })
           return
         }
         const settings = ctx.api.settings.get()
@@ -41,9 +48,13 @@ export default defineMainPlugin<RemoteCiSettings>({
         if (!agentToken || stopped) return
         await playPending(ctx, connection.serverUrl, agentToken)
       } catch (error) {
-        const message = error instanceof Error ? error.message : '绑定失败'
+        const message = describeError(error, ctx.api.settings.get().serverUrl)
         ctx.logger.warn(message)
-        await remember(ctx, { lastError: message })
+        await remember(ctx, {
+          status: 'error',
+          lastError: message,
+          checkedAt: new Date().toISOString()
+        })
       }
     }
     const timer = setInterval(() => {
@@ -68,13 +79,16 @@ async function bind(ctx: MainPluginContext<RemoteCiSettings>, connection: Connec
     deviceName: 'ExamAware'
   }, { allowLocalNetwork: true, timeoutMs: 10_000 })
   if (!response.ok) throw new Error(`绑定失败（${response.status}）`)
-  const body = response.json<{ token?: string; className?: string }>()
+  const body = response.json<{ token?: string; className?: string; classId?: string }>()
   if (!body.token) throw new Error('绑定响应缺少令牌')
   await remember(ctx, {
+    status: 'bound',
     agentToken: body.token,
     serverUrl: connection.serverUrl,
     className: body.className ?? connection.className,
-    lastError: ''
+    classId: body.classId ?? connection.classId,
+    lastError: '',
+    checkedAt: new Date().toISOString()
   })
   ctx.logger.info(`已绑定班级 ${body.className || connection.className || ''}`.trim())
   return body.token
@@ -138,4 +152,12 @@ async function ack(
 
 async function remember(ctx: MainPluginContext<RemoteCiSettings>, patch: Partial<RemoteCiSettings>) {
   await ctx.api.settings.patch(patch)
+}
+
+function describeError(error: unknown, serverUrl?: string) {
+  const message = error instanceof Error ? error.message : '绑定失败'
+  if (message === 'fetch failed' || message === 'Failed to fetch') {
+    return serverUrl ? `无法连接 ${serverUrl}` : '无法连接 RemoteCI 服务器'
+  }
+  return message
 }

@@ -16,10 +16,25 @@
       "default": "",
       "description": "已绑定的班级名称。"
     },
+    "status": {
+      "type": "string",
+      "default": "waiting",
+      "description": "连接状态：bound、waiting 或 error。"
+    },
+    "classId": {
+      "type": "string",
+      "default": "",
+      "description": "已绑定的班级编号。"
+    },
     "lastError": {
       "type": "string",
       "default": "",
       "description": "最近一次绑定或放映失败的说明。"
+    },
+    "checkedAt": {
+      "type": "string",
+      "default": "",
+      "description": "最近一次检查连接的时间。"
     },
     "startedJobIds": {
       "type": "array",

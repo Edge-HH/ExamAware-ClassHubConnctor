@@ -1,6 +1,6 @@
 {
   "name": "examaware-plugin-remoteci",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "description": "把教室里的 ExamAware 绑定到 ClassIsland 上的 RemoteCI，并放映分发下来的考试。",
