@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "properties": {
+    "agentToken": {
+      "type": "string",
+      "default": "",
+      "description": "考试端绑定后的令牌。"
+    },
+    "serverUrl": {
+      "type": "string",
+      "default": "",
+      "description": "已绑定的 RemoteCI 服务器地址。"
+    },
+    "className": {
+      "type": "string",
+      "default": "",
+      "description": "已绑定的班级名称。"
+    },
+    "lastError": {
+      "type": "string",
+      "default": "",
+      "description": "最近一次绑定或放映失败的说明。"
+    },
+    "startedJobIds": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "string" },
+      "description": "已经放映过的考试任务，避免重复开考。"
+    }
+  }
+}

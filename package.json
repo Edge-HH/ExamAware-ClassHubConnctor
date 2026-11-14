@@ -1,0 +1,61 @@
+{
+  "name": "examaware-plugin-remoteci",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "把教室里的 ExamAware 绑定到 ClassIsland 上的 RemoteCI，并放映分发下来的考试。",
+  "main": "./dist/main/index.cjs",
+  "module": "./dist/renderer/index.mjs",
+  "scripts": {
+    "test": "node --test src/shared/connection.test.mjs",
+    "build": "vite build --config vite.config.ts && vite build --config vite.main.config.ts",
+    "build:renderer": "vite build --config vite.config.ts",
+    "build:main": "vite build --config vite.main.config.ts",
+    "pack": "npm run build && pack-examaware-plugin"
+  },
+  "examaware": {
+    "apiVersion": 2,
+    "displayName": "RemoteCI 考试",
+    "description": "读取 ClassIsland 上 RemoteCI 的连接信息并绑定，放映 RemoteCI 分发的考试。",
+    "engines": {
+      "desktop": ">=1.6.0",
+      "sdk": ">=1.6.0 <2.0.0"
+    },
+    "targets": {
+      "main": "./dist/main/index.cjs",
+      "renderer": "./dist/renderer/index.mjs"
+    },
+    "permissions": [
+      "player.start",
+      "files.read",
+      "network.http",
+      "network.local",
+      "ui.contribute"
+    ],
+    "activation": {
+      "rendererWindows": ["settings"]
+    },
+    "settings": {
+      "namespace": "examaware-plugin-remoteci",
+      "schema": "./schema.json"
+    }
+  },
+  "dependencies": {
+    "@dsz-examaware/plugin-sdk": "1.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.0",
+    "vue": "^3.5.26"
+  },
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Edge-HH/ExamAware-ClassHubConnctor"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
